@@ -1,0 +1,37 @@
+<template>
+    <lightning-card 
+        title={sectionLabel} 
+        icon-name="standard:section"
+        class={cardClass}
+        if:true={hasFields}>
+        
+        <div slot="actions" if:true={isCollapsible}>
+            <lightning-button-icon 
+                icon-name={expandIcon}
+                alternative-text="Toggle Section"
+                onclick={toggleSection}
+                variant="border-filled">
+            </lightning-button-icon>
+        </div>
+        
+        <div class="slds-p-around_medium">
+            <p class="slds-text-body_small slds-m-bottom_small" if:true={sectionDescription}>
+                {sectionDescription}
+            </p>
+            
+            <div if:true={isExpanded}>
+                <lightning-layout multiple-rows>
+                    <template for:each={visibleFields} for:item="field">
+                        <c-dynamic-field 
+                            key={field.Id}
+                            field={field}
+                            value={field.fieldValue}
+                            onfieldchange={handleFieldChange}>
+                        </c-dynamic-field>
+                    </template>
+                </lightning-layout>
+            </div>
+        </div>
+    </lightning-card>
+</template>
+

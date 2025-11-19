@@ -1,0 +1,65 @@
+<template>
+    <lightning-layout-item size="12" class="slds-m-bottom_small">
+        <lightning-input
+            if:true={isText}
+            label={fieldLabel}
+            value={value}
+            onchange={handleChange}
+            required={isRequired}
+            class="slds-m-bottom_x-small">
+        </lightning-input>
+        
+        <lightning-input
+            if:true={isNumber}
+            type="number"
+            label={fieldLabel}
+            value={value}
+            onchange={handleChange}
+            required={isRequired}
+            formatter="decimal"
+            class="slds-m-bottom_x-small">
+        </lightning-input>
+        
+        <lightning-input
+            if:true={isCurrency}
+            type="number"
+            label={fieldLabel}
+            value={value}
+            onchange={handleChange}
+            required={isRequired}
+            formatter="currency"
+            class="slds-m-bottom_x-small">
+        </lightning-input>
+        
+        <lightning-input
+            if:true={isDate}
+            type="date"
+            label={fieldLabel}
+            value={value}
+            onchange={handleChange}
+            required={isRequired}
+            class="slds-m-bottom_x-small">
+        </lightning-input>
+        
+        <lightning-combobox
+            if:true={isPicklist}
+            label={fieldLabel}
+            value={value}
+            options={picklistOptions}
+            onchange={handleChange}
+            required={isRequired}
+            class="slds-m-bottom_x-small">
+        </lightning-combobox>
+        
+        <lightning-dual-listbox
+            if:true={isMultipicklist}
+            label={fieldLabel}
+            value={value}
+            options={picklistOptions}
+            onchange={handleChange}
+            required={isRequired}
+            class="slds-m-bottom_x-small">
+        </lightning-dual-listbox>
+    </lightning-layout-item>
+</template>
+

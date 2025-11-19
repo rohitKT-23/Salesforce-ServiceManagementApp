@@ -1,0 +1,40 @@
+<template>
+    <lightning-card title="Documents" icon-name="standard:file" if:true={hasDocuments}>
+        <div class="slds-p-around_medium">
+            <template for:each={sortedDocuments} for:item="document">
+                <div key={document.Id} class="slds-m-bottom_large">
+                    <div class="slds-grid slds-grid_align-spread slds-m-bottom_small">
+                        <div>
+                            <h3 class="slds-text-heading_small">
+                                <template if:true={document.Document_Name__c}>
+                                    {document.Document_Name__c}
+                                </template>
+                                <template if:false={document.Document_Name__c}>
+                                    {document.Name}
+                                </template>
+                                <lightning-badge 
+                                    if:true={document.Mandatory__c}
+                                    label="Required" 
+                                    class="slds-m-left_x-small">
+                                </lightning-badge>
+                            </h3>
+                            <p class="slds-text-body_small slds-m-top_x-small" if:true={document.Allowed_Types__c}>
+                                Allowed types: {document.Allowed_Types__c}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <lightning-file-upload
+                        label="Upload File"
+                        name="fileUploader"
+                        accept={allowedFileTypes}
+                        data-document-id={document.Id}
+                        onuploadfinished={handleUploadFinished}
+                        multiple>
+                    </lightning-file-upload>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+</template>
+

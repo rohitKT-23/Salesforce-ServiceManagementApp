@@ -1,0 +1,88 @@
+<template>
+    <lightning-card title="Service Request Form" icon-name="standard:service_request">
+        <div slot="actions">
+            <lightning-button 
+                label="Cancel" 
+                onclick={handleCancel}
+                variant="neutral">
+            </lightning-button>
+            <lightning-button 
+                label={saveButtonLabel} 
+                onclick={handleSave}
+                variant="brand"
+                disabled={isSaving}
+                if:true={hasServiceSelected}>
+            </lightning-button>
+        </div>
+        
+        <div class="slds-p-around_medium">
+            <!-- Service Selector (shown when no service is selected) -->
+            <template if:true={showServiceSelector}>
+                <div class="slds-m-bottom_large">
+                    <lightning-combobox
+                        label="Select Service"
+                        placeholder="Search and select a service..."
+                        value={selectedServiceId}
+                        options={serviceOptions}
+                        onchange={handleServiceChange}
+                        required>
+                    </lightning-combobox>
+                    <p class="slds-text-color_weak slds-m-top_small">
+                        Please select a service to continue with your request.
+                    </p>
+                </div>
+            </template>
+            
+            <!-- Form Content (shown after service is selected) -->
+            <template if:false={showServiceSelector}>
+                <!-- Back button to change service -->
+                <div class="slds-m-bottom_medium" if:false={isEditMode}>
+                    <lightning-button 
+                        label="Change Service" 
+                        onclick={handleServiceSelectorBack}
+                        variant="neutral"
+                        icon-name="utility:back">
+                    </lightning-button>
+                </div>
+                
+                <template if:true={isLoading}>
+                    <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                </template>
+                
+                <template if:false={isLoading}>
+                    <!-- Status Selection -->
+                    <div class="slds-m-bottom_large" if:true={hasStatuses}>
+                        <lightning-combobox
+                            label="Status"
+                            value={selectedStatus}
+                            options={statusOptions}
+                            onchange={handleStatusChange}
+                            required>
+                        </lightning-combobox>
+                    </div>
+                    
+                    <!-- Sections -->
+                    <template if:true={hasSections}>
+                        <template for:each={sortedSections} for:item="section">
+                            <c-section-renderer
+                                key={section.Id}
+                                section={section}
+                                field-values={fieldValues}
+                                condition-groups={conditionGroups}
+                                onfieldchange={handleFieldChange}>
+                            </c-section-renderer>
+                        </template>
+                    </template>
+                    
+                    <!-- Documents -->
+                    <c-document-uploader
+                        if:true={hasDocuments}
+                        documents={documents}
+                        service-request-id={recordId}>
+                    </c-document-uploader>
+                </template>
+            </template>
+        </div>
+    </lightning-card>
+</template>
+
