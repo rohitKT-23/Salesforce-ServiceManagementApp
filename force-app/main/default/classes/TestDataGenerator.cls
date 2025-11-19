@@ -204,6 +204,7 @@ public class TestDataGenerator {
                     API_Name__c = 'RequestType__c',
                     Display_Label__c = 'Request Type',
                     Type__c = 'Picklist',
+                    Picklist_Values__c = 'Hardware,Software,Network,Other',
                     Sequence__c = 1
                 ));
                 
@@ -213,6 +214,7 @@ public class TestDataGenerator {
                     API_Name__c = 'Priority__c',
                     Display_Label__c = 'Priority',
                     Type__c = 'Picklist',
+                    Picklist_Values__c = 'Low,Medium,High,Urgent',
                     Sequence__c = 2
                 ));
                 
@@ -285,6 +287,12 @@ public class TestDataGenerator {
         // We'll create statuses without Request_Status__c to avoid picklist errors
         // You can manually update Request_Status__c after creation if needed
         for (Service__c service : services) {
+            statuses.add(new Status__c(
+                Name = 'Draft',
+                Service__c = service.Id,
+                Active__c = true
+            ));
+            
             statuses.add(new Status__c(
                 Name = 'New',
                 Service__c = service.Id,
@@ -421,6 +429,94 @@ public class TestDataGenerator {
         }
         
         return steps;
+    }
+    
+    /**
+     * Add Draft status to existing services
+     * Use this if Draft status is missing from your services
+     */
+    public static void addDraftStatus() {
+        System.debug('=== Adding Draft Status ===');
+        
+        // Get all services
+        List<Service__c> services = [SELECT Id FROM Service__c];
+        System.debug('Found ' + services.size() + ' services');
+        
+        // Get existing statuses
+        List<Status__c> existingStatuses = [
+            SELECT Id, Name, Service__c 
+            FROM Status__c 
+            WHERE Service__c IN :services
+        ];
+        
+        // Create a map of service IDs to existing status names
+        Map<Id, Set<String>> statusesByService = new Map<Id, Set<String>>();
+        for (Status__c status : existingStatuses) {
+            if (!statusesByService.containsKey(status.Service__c)) {
+                statusesByService.put(status.Service__c, new Set<String>());
+            }
+            statusesByService.get(status.Service__c).add(status.Name);
+        }
+        
+        // Create Draft status for services that don't have it
+        List<Status__c> draftStatuses = new List<Status__c>();
+        for (Service__c service : services) {
+            Set<String> existingNames = statusesByService.get(service.Id);
+            if (existingNames == null || !existingNames.contains('Draft')) {
+                draftStatuses.add(new Status__c(
+                    Name = 'Draft',
+                    Service__c = service.Id,
+                    Active__c = true
+                ));
+            }
+        }
+        
+        if (!draftStatuses.isEmpty()) {
+            insert draftStatuses;
+            System.debug('Created ' + draftStatuses.size() + ' Draft statuses');
+        } else {
+            System.debug('All services already have Draft status');
+        }
+    }
+    
+    /**
+     * Update existing Service Section Fields with Picklist Values
+     * Use this if you have existing fields without Picklist_Values__c populated
+     */
+    public static void updatePicklistValues() {
+        System.debug('=== Updating Picklist Values ===');
+        
+        List<Service_Section_Field__c> fieldsToUpdate = new List<Service_Section_Field__c>();
+        
+        // Find all picklist fields (can't filter Long Text Area in WHERE clause)
+        List<Service_Section_Field__c> picklistFields = [
+            SELECT Id, Name, API_Name__c, Type__c, Picklist_Values__c
+            FROM Service_Section_Field__c
+            WHERE Type__c = 'Picklist'
+        ];
+        
+        System.debug('Found ' + picklistFields.size() + ' picklist fields');
+        
+        for (Service_Section_Field__c field : picklistFields) {
+            // Check if field needs values (null or empty)
+            if (String.isBlank(field.Picklist_Values__c)) {
+                // Set default values based on field name/API name
+                if (field.API_Name__c == 'RequestType__c' || field.Name.contains('Request Type')) {
+                    field.Picklist_Values__c = 'Hardware,Software,Network,Other';
+                    fieldsToUpdate.add(field);
+                } else if (field.API_Name__c == 'Priority__c' || field.Name.contains('Priority')) {
+                    field.Picklist_Values__c = 'Low,Medium,High,Urgent';
+                    fieldsToUpdate.add(field);
+                }
+            }
+        }
+        
+        if (!fieldsToUpdate.isEmpty()) {
+            update fieldsToUpdate;
+            System.debug('Updated ' + fieldsToUpdate.size() + ' fields with picklist values');
+        } else {
+            System.debug('No fields needed updating');
+        }
     }
 }
 

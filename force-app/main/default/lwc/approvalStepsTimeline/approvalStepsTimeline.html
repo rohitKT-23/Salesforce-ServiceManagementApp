@@ -1,6 +1,38 @@
 <template>
-    <lightning-card title="Approval Steps" icon-name="standard:approval" if:true={hasSteps}>
+    <lightning-card title="Approval Timeline" icon-name="standard:approval">
         <div class="slds-p-around_medium">
+            <!-- Search Section (shown when recordId is not passed from parent) -->
+            <template if:true={showSearchSection}>
+                <div class="slds-m-bottom_large">
+                    <lightning-input
+                        label="Search Service Request"
+                        type="search"
+                        placeholder="Type to search service requests..."
+                        value={searchTerm}
+                        onchange={handleServiceRequestSearch}
+                        class="slds-m-bottom_small">
+                    </lightning-input>
+                    
+                    <lightning-combobox
+                        label="Select Service Request"
+                        placeholder="Select from results..."
+                        value={selectedServiceRequestId}
+                        options={serviceRequestOptions}
+                        onchange={handleServiceRequestChange}
+                        if:true={hasServiceRequestOptions}>
+                    </lightning-combobox>
+                    
+                    <template if:true={isSearchingRequests}>
+                        <lightning-spinner alternative-text="Searching..." size="small" class="slds-m-top_small"></lightning-spinner>
+                    </template>
+                    
+                    <p class="slds-text-color_weak slds-m-top_small">
+                        Type in the search box above to find Service Requests, then select one from the dropdown to view its approval timeline.
+                    </p>
+                </div>
+            </template>
+            
+            <!-- Timeline Content -->
             <template if:true={isLoading}>
                 <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
             </template>
@@ -12,50 +44,63 @@
                     </div>
                 </template>
                 
-                <ul class="slds-timeline" if:true={hasSteps}>
-                    <template for:each={stepsWithClasses} for:item="step">
-                        <li key={step.id} class={step.statusClass}>
-                            <div class="slds-timeline__item">
-                                <span class="slds-assistive-text">{step.statusLabel}</span>
-                                <div class="slds-media">
-                                    <div class="slds-media__figure">
-                                        <lightning-icon
-                                            icon-name={step.icon}
-                                            variant={step.iconVariant}
-                                            size="small">
-                                        </lightning-icon>
-                                    </div>
-                                    <div class="slds-media__body">
-                                        <div class="slds-timeline__actions">
-                                            <dl class="slds-list_horizontal slds-wrap">
-                                                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Sequence">
-                                                    Step {step.sequence}
-                                                </dt>
-                                                <dd class="slds-item_detail slds-truncate">
-                                                    <lightning-badge 
-                                                        label={step.statusLabel}
-                                                        class="slds-m-left_x-small">
-                                                    </lightning-badge>
-                                                </dd>
-                                            </dl>
+                <template if:true={hasSteps}>
+                    <ul class="slds-timeline">
+                        <template for:each={stepsWithClasses} for:item="step">
+                            <li key={step.id} class={step.statusClass}>
+                                <div class="slds-timeline__item">
+                                    <span class="slds-assistive-text">{step.statusLabel}</span>
+                                    <div class="slds-media">
+                                        <div class="slds-media__figure">
+                                            <lightning-icon
+                                                icon-name={step.icon}
+                                                variant={step.iconVariant}
+                                                size="small">
+                                            </lightning-icon>
                                         </div>
-                                        <h3 class="slds-timeline__title slds-truncate" title={step.description}>
-                                            {step.description}
-                                        </h3>
-                                        <p class="slds-timeline__detail">
-                                            <template if:true={step.expectedStatus}>
-                                                Expected Status: <strong>{step.expectedStatus}</strong>
-                                            </template>
-                                            <template if:true={step.currentStatus}>
-                                                <br/>Current Status: <strong>{step.currentStatus}</strong>
-                                            </template>
-                                        </p>
+                                        <div class="slds-media__body">
+                                            <div class="slds-timeline__actions">
+                                                <dl class="slds-list_horizontal slds-wrap">
+                                                    <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Sequence">
+                                                        Step {step.sequence}
+                                                    </dt>
+                                                    <dd class="slds-item_detail slds-truncate">
+                                                        <lightning-badge 
+                                                            label={step.statusLabel}
+                                                            class="slds-m-left_x-small">
+                                                        </lightning-badge>
+                                                    </dd>
+                                                </dl>
+                                            </div>
+                                            <h3 class="slds-timeline__title slds-truncate" title={step.description}>
+                                                {step.description}
+                                            </h3>
+                                            <p class="slds-timeline__detail">
+                                                <template if:true={step.expectedStatus}>
+                                                    Expected Status: <strong>{step.expectedStatus}</strong>
+                                                </template>
+                                                <template if:true={step.currentStatus}>
+                                                    <br/>Current Status: <strong>{step.currentStatus}</strong>
+                                                </template>
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </li>
-                    </template>
-                </ul>
+                            </li>
+                        </template>
+                    </ul>
+                </template>
+                
+                <template if:false={hasSteps}>
+                    <div class="slds-text-align_center slds-p-around_medium">
+                        <template if:true={showSearchSection}>
+                            <p class="slds-text-color_weak">Search and select a Service Request to view its approval timeline.</p>
+                        </template>
+                        <template if:false={showSearchSection}>
+                            <p class="slds-text-color_weak">No approval steps configured for this service request.</p>
+                        </template>
+                    </div>
+                </template>
             </template>
         </div>
     </lightning-card>

@@ -27,11 +27,17 @@
                     <lightning-file-upload
                         label="Upload File"
                         name="fileUploader"
-                        accept={allowedFileTypes}
+                        accept={document.allowedTypesArray}
                         data-document-id={document.Id}
                         onuploadfinished={handleUploadFinished}
                         multiple>
                     </lightning-file-upload>
+                    
+                    <!-- Show uploaded documents for this service document -->
+                    <c-document-list 
+                        service-document-id={document.Id}
+                        request-documents={requestDocuments}>
+                    </c-document-list>
                 </div>
             </template>
         </div>

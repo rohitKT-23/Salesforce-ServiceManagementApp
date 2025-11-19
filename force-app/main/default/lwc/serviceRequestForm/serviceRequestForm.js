@@ -23,6 +23,7 @@ export default class ServiceRequestForm extends NavigationMixin(LightningElement
     @track services = [];
     @track selectedServiceId;
     @track showServiceSelector = true;
+    @track activeSections = [];
     
     get isEditMode() {
         return !!this.recordId;
@@ -52,6 +53,21 @@ export default class ServiceRequestForm extends NavigationMixin(LightningElement
     
     get hasDocuments() {
         return this.documents && this.documents.length > 0;
+    }
+    
+    get showApprovalTimeline() {
+        // Show approval timeline when we have a recordId (existing request in edit mode)
+        return !!this.recordId;
+    }
+    
+    get timelineRecordId() {
+        // Return the recordId to use for timeline (from edit mode)
+        return this.recordId;
+    }
+    
+    handleLinkPendingDocuments(event) {
+        // This handler is for event-based communication (if needed)
+        console.log('handleLinkPendingDocuments event received:', event.detail);
     }
     
     get saveButtonLabel() {
@@ -182,10 +198,24 @@ export default class ServiceRequestForm extends NavigationMixin(LightningElement
         this.documents = data.documents || [];
         this.conditionGroups = data.conditionGroups || [];
         
-        // Set default status if available
+        // Set default status to Draft if available, otherwise first status
         if (this.statuses.length > 0 && !this.selectedStatus) {
-            this.selectedStatus = this.statuses[0].Id;
+            // Look for Draft status first
+            const draftStatus = this.statuses.find(s => s.Name === 'Draft');
+            if (draftStatus) {
+                this.selectedStatus = draftStatus.Id;
+            } else {
+                // Fallback to first status if Draft not found
+                this.selectedStatus = this.statuses[0].Id;
+            }
         }
+        
+        // Expand all sections by default
+        this.activeSections = this.sections.map(s => s.Id);
+    }
+    
+    handleSectionToggle(event) {
+        this.activeSections = event.detail.openSections;
     }
     
     loadExistingRequestData() {
@@ -204,11 +234,34 @@ export default class ServiceRequestForm extends NavigationMixin(LightningElement
     }
     
     handleFieldChange(event) {
-        const { apiName, value } = event.detail;
-        this.fieldValues[apiName] = value;
-        
-        // Re-evaluate visibility of fields/sections based on conditions
-        // This will trigger reactive updates in child components
+        try {
+            if (!event || !event.detail) {
+                console.warn('Invalid event in handleFieldChange');
+                return;
+            }
+            
+            const apiName = event.detail.apiName;
+            const value = event.detail.value;
+            
+            if (!apiName) {
+                console.warn('API Name missing in field change event');
+                return;
+            }
+            
+            // Initialize fieldValues if needed
+            if (!this.fieldValues) {
+                this.fieldValues = {};
+            }
+            
+            // Update field value
+            this.fieldValues[apiName] = value;
+            
+            // Re-evaluate visibility of fields/sections based on conditions
+            // This will trigger reactive updates in child components
+        } catch (error) {
+            console.warn('Error in handleFieldChange (non-critical):', error.message || error);
+            // Don't rethrow - prevent error from breaking the form
+        }
     }
     
     handleStatusChange(event) {
@@ -247,13 +300,52 @@ export default class ServiceRequestForm extends NavigationMixin(LightningElement
                 serviceId: this.selectedServiceId || this.serviceId,
                 fieldValues: requestData
             })
-            .then(requestId => {
+            .then(function(requestId) {
+                // Update serviceRequestId for document uploader
+                this.recordId = requestId;
+                
+                // Wait a bit for the component to update, then link pending documents
+                const self = this;
+                setTimeout(function() {
+                    // Try method call first
+                    const documentUploader = self.template.querySelector('c-document-uploader');
+                    console.log('Document uploader found:', documentUploader);
+                    
+                    if (documentUploader) {
+                        // Try method call
+                        if (typeof documentUploader.linkPendingDocuments === 'function') {
+                            console.log('Calling linkPendingDocuments method with requestId:', requestId);
+                            try {
+                                documentUploader.linkPendingDocuments(requestId);
+                                console.log('linkPendingDocuments method called successfully');
+                            } catch (error) {
+                                console.error('Error calling linkPendingDocuments method:', error);
+                            }
+                        } else {
+                            console.log('linkPendingDocuments method not available, dispatching event');
+                            // Dispatch custom event as fallback
+                            const linkEvent = new CustomEvent('linkpendingdocuments', {
+                                detail: { serviceRequestId: requestId },
+                                bubbles: true,
+                                composed: true
+                            });
+                            documentUploader.dispatchEvent(linkEvent);
+                        }
+                    } else {
+                        console.error('Document uploader component not found');
+                    }
+                }, 300);
+                
                 this.showSuccess('Service Request created successfully');
-                this.navigateToRecord(requestId);
-            })
-            .catch(error => {
-                this.showError('Error saving request: ' + error.body?.message || error.message);
-            })
+                // Don't navigate immediately - let documents link first
+                setTimeout(function() {
+                    self.navigateToRecord(requestId);
+                }, 1000);
+            }.bind(this))
+            .catch(function(error) {
+                const errorMessage = error.body && error.body.message ? error.body.message : error.message;
+                this.showError('Error saving request: ' + errorMessage);
+            }.bind(this))
             .finally(() => {
                 this.isSaving = false;
             });

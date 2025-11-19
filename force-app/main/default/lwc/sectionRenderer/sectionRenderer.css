@@ -1,0 +1,8 @@
+.fields-layout {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    margin-bottom: 1rem !important;
+    row-gap: 1rem !important;
+}
+

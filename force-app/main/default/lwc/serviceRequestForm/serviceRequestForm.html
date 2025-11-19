@@ -61,25 +61,39 @@
                         </lightning-combobox>
                     </div>
                     
-                    <!-- Sections -->
+                    <!-- Sections with Accordion -->
                     <template if:true={hasSections}>
-                        <template for:each={sortedSections} for:item="section">
-                            <c-section-renderer
-                                key={section.Id}
-                                section={section}
-                                field-values={fieldValues}
-                                condition-groups={conditionGroups}
-                                onfieldchange={handleFieldChange}>
-                            </c-section-renderer>
-                        </template>
+                        <div class="slds-m-bottom_large">
+                            <lightning-accordion 
+                                allow-multiple-sections-open="true" 
+                                active-section-name={activeSections}
+                                onsectiontoggle={handleSectionToggle}>
+                                <template for:each={sortedSections} for:item="section">
+                                    <c-section-renderer
+                                        key={section.Id}
+                                        section={section}
+                                        field-values={fieldValues}
+                                        condition-groups={conditionGroups}
+                                        onfieldchange={handleFieldChange}>
+                                    </c-section-renderer>
+                                </template>
+                            </lightning-accordion>
+                        </div>
                     </template>
                     
                     <!-- Documents -->
                     <c-document-uploader
                         if:true={hasDocuments}
                         documents={documents}
-                        service-request-id={recordId}>
+                        service-request-id={recordId}
+                        onlinkpendingdocuments={handleLinkPendingDocuments}>
                     </c-document-uploader>
+                    
+                    <!-- Approval Timeline (show when recordId exists in edit mode) -->
+                    <c-approval-steps-timeline
+                        if:true={showApprovalTimeline}
+                        record-id={timelineRecordId}>
+                    </c-approval-steps-timeline>
                 </template>
             </template>
         </div>

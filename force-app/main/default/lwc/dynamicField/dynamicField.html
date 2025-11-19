@@ -1,12 +1,13 @@
 <template>
-    <lightning-layout-item size="12" class="slds-m-bottom_small">
+    <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="field-container">
+        <div class="field-wrapper">
         <lightning-input
             if:true={isText}
             label={fieldLabel}
             value={value}
             onchange={handleChange}
             required={isRequired}
-            class="slds-m-bottom_x-small">
+            placeholder={textPlaceholder}>
         </lightning-input>
         
         <lightning-input
@@ -17,7 +18,7 @@
             onchange={handleChange}
             required={isRequired}
             formatter="decimal"
-            class="slds-m-bottom_x-small">
+            placeholder="Enter number">
         </lightning-input>
         
         <lightning-input
@@ -28,7 +29,7 @@
             onchange={handleChange}
             required={isRequired}
             formatter="currency"
-            class="slds-m-bottom_x-small">
+            placeholder="Enter amount">
         </lightning-input>
         
         <lightning-input
@@ -37,8 +38,7 @@
             label={fieldLabel}
             value={value}
             onchange={handleChange}
-            required={isRequired}
-            class="slds-m-bottom_x-small">
+            required={isRequired}>
         </lightning-input>
         
         <lightning-combobox
@@ -48,18 +48,18 @@
             options={picklistOptions}
             onchange={handleChange}
             required={isRequired}
-            class="slds-m-bottom_x-small">
+            placeholder={picklistPlaceholder}>
         </lightning-combobox>
         
         <lightning-dual-listbox
             if:true={isMultipicklist}
             label={fieldLabel}
-            value={value}
+            value={multipicklistValue}
             options={picklistOptions}
-            onchange={handleChange}
-            required={isRequired}
-            class="slds-m-bottom_x-small">
+            onchange={handleMultipicklistChange}
+            required={isRequired}>
         </lightning-dual-listbox>
+        </div>
     </lightning-layout-item>
 </template>
 

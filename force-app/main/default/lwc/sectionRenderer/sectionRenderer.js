@@ -10,6 +10,10 @@ export default class SectionRenderer extends LightningElement {
         return this.section?.Name || '';
     }
     
+    get sectionName() {
+        return this.section?.Id || '';
+    }
+    
     get sectionDescription() {
         return this.section?.Description__c || '';
     }
@@ -153,21 +157,45 @@ export default class SectionRenderer extends LightningElement {
     }
     
     handleFieldChange(event) {
-        const { apiName, value } = event.detail;
-        this.fieldValues[apiName] = value;
-        
-        // Dispatch event to parent
-        this.dispatchEvent(
-            new CustomEvent('fieldchange', {
-                detail: {
-                    apiName,
-                    value,
-                    sectionId: this.section.Id
-                },
-                bubbles: true,
-                composed: true
-            })
-        );
+        try {
+            if (!event || !event.detail) {
+                console.warn('Invalid event in handleFieldChange');
+                return;
+            }
+            
+            const apiName = event.detail.apiName;
+            const value = event.detail.value;
+            
+            if (!apiName) {
+                console.warn('API Name missing in field change event');
+                return;
+            }
+            
+            // Update field values
+            if (!this.fieldValues) {
+                this.fieldValues = {};
+            }
+            this.fieldValues[apiName] = value;
+            
+            // Get section ID safely
+            const sectionId = this.section && this.section.Id ? this.section.Id : null;
+            
+            // Dispatch event to parent
+            this.dispatchEvent(
+                new CustomEvent('fieldchange', {
+                    detail: {
+                        apiName: apiName,
+                        value: value,
+                        sectionId: sectionId
+                    },
+                    bubbles: true,
+                    composed: true
+                })
+            );
+        } catch (error) {
+            console.warn('Error in handleFieldChange (non-critical):', error.message || error);
+            // Don't rethrow - prevent error from breaking the form
+        }
     }
 }
 
