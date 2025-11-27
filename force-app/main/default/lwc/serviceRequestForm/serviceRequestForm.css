@@ -1,0 +1,12 @@
+.pricing-detail {
+    border-left: 4px solid var(--lwc-colorBrand, #1b96ff);
+}
+
+.pricing-detail__rows p {
+    margin: 0.125rem 0;
+}
+
+.pricing-detail__rows p:last-child {
+    margin-bottom: 0;
+}
+

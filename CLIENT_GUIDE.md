@@ -23,10 +23,12 @@ A **Dynamic Service Request System** for Salesforce that allows users to create 
 - Fields can show/hide based on conditions
 - Example: Show "Budget" field only if "Request Type" = "Purchase"
 
-### 4. **Document Upload**
+### 4. **Document Upload & Tracking**
 - Upload required documents for each service
 - Set which documents are mandatory
 - Control allowed file types (PDF, JPG, etc.)
+- Every upload creates a `Request_Document__c` record with sequence/type metadata
+- Files are automatically linked to both the Service Request and Request Document (Notes & Attachments)
 
 ### 5. **Approval Workflow**
 - Visual timeline showing approval steps
@@ -38,16 +40,27 @@ A **Dynamic Service Request System** for Salesforce that allows users to create 
 - Track request progress through different stages
 - Example: New → In Progress → Approved → Completed
 
+### 7. **Service Pricing Catalog**
+- Configure tiered pricing (e.g., Standard / Priority / Executive) per service
+- Show Amount, Discount, and Total inside the form
+- Selected pricing auto-populates on the Service Request record
+
+### 8. **Request Timeline Insights**
+- Approval timeline now mirrors live `Service_Request__c.Status__c`
+- Clear icons, colors, and alignment for completed/current/pending steps
+- Timeline view available directly within the Approval Timeline section
+
 ---
 
 ## How It Works
 
 ### For End Users:
 1. **Select a Service** - Choose from available services
-2. **Fill the Form** - Complete fields based on selected service
-3. **Upload Documents** - Attach required files
-4. **Submit Request** - Form saves automatically
-5. **Track Progress** - View approval timeline
+2. **Choose Pricing (if available)** - Pick the package that fits the request
+3. **Fill the Form** - Complete fields based on selected service
+4. **Upload Documents** - Attach required files (auto-saved to Request Documents & Files)
+5. **Submit Request** - Form saves automatically
+6. **Track Progress** - View approval timeline inside the same experience
 
 ### For Administrators:
 1. **Create Services** - Define what services are available
@@ -55,6 +68,7 @@ A **Dynamic Service Request System** for Salesforce that allows users to create 
 3. **Set Conditions** - Define when fields should appear
 4. **Define Statuses** - Create workflow stages
 5. **Set Approval Steps** - Configure approval process
+6. **Maintain Pricing** - Add/update `Service_Pricing__c` tiers per service (use TestDataGenerator helpers for sample data)
 
 ---
 
@@ -64,6 +78,8 @@ A **Dynamic Service Request System** for Salesforce that allows users to create 
 - Main form where users create requests
 - Dynamic service selector
 - Auto-loads form configuration
+- Built-in pricing selector with summary card
+- Invokes document uploader to persist Request Document records + ContentDocumentLinks
 
 ### 2. **Section Renderer**
 - Displays form sections
@@ -74,11 +90,17 @@ A **Dynamic Service Request System** for Salesforce that allows users to create 
 - File upload interface
 - Validates file types
 - Shows mandatory vs optional documents
+- Creates/updates `Request_Document__c` rows and links files to Notes & Attachments automatically
 
 ### 4. **Approval Timeline**
 - Visual progress tracker
 - Shows completed and pending steps
 - Color-coded status indicators
+- Falls back to service request status when request-specific steps are missing
+
+### 5. **Test Data Generator**
+- Seeds services, sections, statuses, documents, approval steps, and pricing tiers
+- Utility method `createPricingForExistingServices()` populates packages for already-configured services
 
 ---
 
@@ -99,10 +121,11 @@ A **Dynamic Service Request System** for Salesforce that allows users to create 
 - Dynamic form rendering
 - Service selection with search
 - Field visibility conditions
-- Document upload functionality
-- Approval timeline display
+- Document upload + Request Document syncing + Notes & Attachments links
+- Approval timeline display with live status sync
 - Status management
-- Test data generation
+- Service pricing catalog and UI picker
+- Test data generation (including pricing tiers)
 
 ✅ **Ready to Use:**
 - All components deployed to Salesforce

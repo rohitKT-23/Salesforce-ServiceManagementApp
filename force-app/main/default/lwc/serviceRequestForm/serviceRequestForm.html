@@ -60,6 +60,45 @@
                             required>
                         </lightning-combobox>
                     </div>
+
+                    <!-- Pricing Selection -->
+                    <template if:true={hasPricings}>
+                        <div class="slds-m-bottom_large">
+                            <lightning-combobox
+                                label="Pricing Option"
+                                placeholder="Select a pricing option"
+                                value={selectedPricingId}
+                                options={pricingOptions}
+                                onchange={handlePricingChange}>
+                            </lightning-combobox>
+
+                            <template if:true={selectedPricingDetails}>
+                                <div class="pricing-detail slds-box slds-theme_default slds-m-top_small">
+                                    <p class="slds-text-title_bold slds-m-bottom_x-small">
+                                        {selectedPricingDetails.name}
+                                    </p>
+                                    <div class="pricing-detail__rows">
+                                        <template if:true={selectedPricingDetails.amount}>
+                                            <p>Amount: {selectedPricingDetails.amount}</p>
+                                        </template>
+                                        <template if:true={selectedPricingDetails.discount}>
+                                            <p>
+                                                Discount: {selectedPricingDetails.discount}
+                                                <template if:true={selectedPricingDetails.discountPercentage}>
+                                                    ({selectedPricingDetails.discountPercentage})
+                                                </template>
+                                            </p>
+                                        </template>
+                                        <template if:true={selectedPricingDetails.total}>
+                                            <p class="slds-text-title_bold slds-m-top_x-small">
+                                                Total: {selectedPricingDetails.total}
+                                            </p>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
                     
                     <!-- Sections with Accordion -->
                     <template if:true={hasSections}>

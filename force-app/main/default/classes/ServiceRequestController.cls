@@ -13,8 +13,9 @@ public with sharing class ServiceRequestController {
             ];
             
             List<Service_Section__c> sections = new List<Service_Section__c>();
+            Id displayConfigId = displayConfigs.isEmpty() ? null : displayConfigs[0].Id;
             
-            if (!displayConfigs.isEmpty()) {
+            if (displayConfigId != null) {
                 // Get Service Sections with fields (linked through Display_Configuration__c)
                 sections = [
                     SELECT Id, Name, Description__c, Sequence__c, Collapsible__c,
@@ -24,7 +25,7 @@ public with sharing class ServiceRequestController {
                             FROM Service_Section_Fields__r
                             ORDER BY Sequence__c ASC)
                     FROM Service_Section__c
-                    WHERE Display_Configuration__c = :displayConfigs[0].Id
+                    WHERE Display_Configuration__c = :displayConfigId
                     ORDER BY Sequence__c ASC
                 ];
             }
@@ -63,6 +64,28 @@ public with sharing class ServiceRequestController {
                 WHERE Service__c = :serviceId
                 ORDER BY Sequence__c ASC
             ];
+
+            // Get Service Pricing options (respect display configuration if available)
+            List<Service_Pricing__c> pricings = new List<Service_Pricing__c>();
+            if (displayConfigId != null) {
+                pricings = [
+                    SELECT Id, Name, Pricing_Name__c, Amount__c, Discount__c, 
+                           Discount_Percentage__c, Total__c, Service__c, Display_Configuration__c
+                    FROM Service_Pricing__c
+                    WHERE Service__c = :serviceId
+                      AND (Display_Configuration__c = :displayConfigId OR Display_Configuration__c = null)
+                    ORDER BY Pricing_Name__c, Name
+                ];
+            } else {
+                pricings = [
+                    SELECT Id, Name, Pricing_Name__c, Amount__c, Discount__c, 
+                           Discount_Percentage__c, Total__c, Service__c, Display_Configuration__c
+                    FROM Service_Pricing__c
+                    WHERE Service__c = :serviceId
+                      AND Display_Configuration__c = null
+                    ORDER BY Pricing_Name__c, Name
+                ];
+            }
             
             // Get Condition Groups with Conditions
             Set<Id> conditionGroupIds = new Set<Id>();
@@ -90,6 +113,7 @@ public with sharing class ServiceRequestController {
             formData.statuses = statuses;
             formData.documents = documents;
             formData.conditionGroups = conditionGroupsMap.values();
+            formData.pricings = pricings;
             
         } catch (Exception e) {
             throw new AuraHandledException('Error loading service form data: ' + e.getMessage());
@@ -192,7 +216,7 @@ public with sharing class ServiceRequestController {
         try {
             // Note: Adjust fields based on what actually exists on Service_Request__c
             return [
-                SELECT Id, Name
+                SELECT Id, Name, Status__c, Service__c, Service_Pricing__c
                 FROM Service_Request__c
                 WHERE Id = :requestId
                 LIMIT 1
@@ -461,6 +485,7 @@ public with sharing class ServiceRequestController {
         @AuraEnabled public List<Status__c> statuses;
         @AuraEnabled public List<Service_Document__c> documents;
         @AuraEnabled public List<Condition_Group__c> conditionGroups;
+        @AuraEnabled public List<Service_Pricing__c> pricings;
     }
 }
 

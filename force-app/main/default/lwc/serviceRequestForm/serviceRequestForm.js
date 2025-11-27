@@ -17,6 +17,8 @@ export default class ServiceRequestForm extends NavigationMixin(LightningElement
     @track documents = [];
     @track sections = [];
     @track conditionGroups = [];
+    @track pricings = [];
+    @track selectedPricingId;
     @track isLoading = false;
     @track isSaving = false;
     @track selectedStatus;
@@ -53,6 +55,49 @@ export default class ServiceRequestForm extends NavigationMixin(LightningElement
     
     get hasDocuments() {
         return this.documents && this.documents.length > 0;
+    }
+
+    get hasPricings() {
+        return this.pricings && this.pricings.length > 0;
+    }
+
+    get pricingOptions() {
+        if (!this.pricings) {
+            return [];
+        }
+        return this.pricings.map(pricing => {
+            const labelParts = [];
+            const displayName = pricing.Pricing_Name__c || pricing.Name;
+            if (displayName) {
+                labelParts.push(displayName);
+            }
+            if (pricing.Total__c !== undefined && pricing.Total__c !== null) {
+                labelParts.push(`Total: ${this.formatNumber(pricing.Total__c)}`);
+            }
+            return {
+                label: labelParts.join(' - ') || pricing.Name,
+                value: pricing.Id
+            };
+        });
+    }
+
+    get selectedPricingDetails() {
+        if (!this.selectedPricingId || !this.pricings) {
+            return null;
+        }
+        const pricing = this.pricings.find(p => p.Id === this.selectedPricingId);
+        if (!pricing) {
+            return null;
+        }
+        return {
+            name: pricing.Pricing_Name__c || pricing.Name,
+            amount: this.formatNumber(pricing.Amount__c),
+            discount: this.formatNumber(pricing.Discount__c),
+            discountPercentage: pricing.Discount_Percentage__c !== undefined && pricing.Discount_Percentage__c !== null
+                ? `${pricing.Discount_Percentage__c}%`
+                : null,
+            total: this.formatNumber(pricing.Total__c)
+        };
     }
     
     get showApprovalTimeline() {
@@ -131,6 +176,8 @@ export default class ServiceRequestForm extends NavigationMixin(LightningElement
         this.selectedServiceId = event.detail.value;
         this.serviceId = event.detail.value;
         this.showServiceSelector = false;
+        this.pricings = [];
+        this.resetPricingSelection();
         this.loadFormData();
     }
     
@@ -143,6 +190,8 @@ export default class ServiceRequestForm extends NavigationMixin(LightningElement
         this.documents = [];
         this.fieldValues = {};
         this.selectedStatus = null;
+        this.pricings = [];
+        this.resetPricingSelection();
     }
     
     loadFormData() {
@@ -197,6 +246,7 @@ export default class ServiceRequestForm extends NavigationMixin(LightningElement
         this.statuses = data.statuses || [];
         this.documents = data.documents || [];
         this.conditionGroups = data.conditionGroups || [];
+        this.pricings = data.pricings || [];
         
         // Set default status to Draft if available, otherwise first status
         if (this.statuses.length > 0 && !this.selectedStatus) {
@@ -212,6 +262,14 @@ export default class ServiceRequestForm extends NavigationMixin(LightningElement
         
         // Expand all sections by default
         this.activeSections = this.sections.map(s => s.Id);
+
+        if (!this.isEditMode) {
+            if (!this.selectedPricingId && this.pricings.length === 1) {
+                this.updateSelectedPricing(this.pricings[0].Id);
+            } else if (this.selectedPricingId && !this.pricings.some(p => p.Id === this.selectedPricingId)) {
+                this.updateSelectedPricing(null);
+            }
+        }
     }
     
     handleSectionToggle(event) {
@@ -226,6 +284,12 @@ export default class ServiceRequestForm extends NavigationMixin(LightningElement
             .then(request => {
                 if (request.Status__c) {
                     this.selectedStatus = request.Status__c;
+                }
+                if (request.Service__c && !this.serviceId) {
+                    this.serviceId = request.Service__c;
+                }
+                if ('Service_Pricing__c' in request) {
+                    this.updateSelectedPricing(request.Service_Pricing__c);
                 }
             })
             .catch(error => {
@@ -267,6 +331,37 @@ export default class ServiceRequestForm extends NavigationMixin(LightningElement
     handleStatusChange(event) {
         this.selectedStatus = event.detail.value;
     }
+
+    handlePricingChange(event) {
+        const pricingId = event.detail.value || null;
+        this.updateSelectedPricing(pricingId);
+    }
+
+    updateSelectedPricing(value) {
+        if (!this.fieldValues) {
+            this.fieldValues = {};
+        }
+        this.selectedPricingId = value || null;
+        this.fieldValues.Service_Pricing__c = this.selectedPricingId || null;
+    }
+
+    resetPricingSelection() {
+        this.updateSelectedPricing(null);
+    }
+
+    formatNumber(value) {
+        if (value === null || value === undefined || isNaN(value)) {
+            return null;
+        }
+        try {
+            return new Intl.NumberFormat(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(Number(value));
+        } catch (error) {
+            return value;
+        }
+    }
     
     handleSave() {
         if (!this.validateForm()) {
@@ -277,7 +372,8 @@ export default class ServiceRequestForm extends NavigationMixin(LightningElement
         
         const requestData = {
             ...this.fieldValues,
-            Status__c: this.selectedStatus
+            Status__c: this.selectedStatus,
+            Service_Pricing__c: this.selectedPricingId || null
         };
         
         if (this.isEditMode) {

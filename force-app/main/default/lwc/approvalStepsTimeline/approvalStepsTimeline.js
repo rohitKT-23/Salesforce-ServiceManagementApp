@@ -156,11 +156,15 @@ export default class ApprovalStepsTimeline extends LightningElement {
             }
             
             // Add computed properties
-            stepCopy.statusClass = step.isCompleted 
-                ? 'slds-timeline__item_expandable slds-is-complete'
-                : isCurrent 
-                    ? 'slds-timeline__item_expandable slds-is-current'
-                    : 'slds-timeline__item_expandable slds-is-pending';
+            let statusClass = 'timeline-entry ';
+            if (step.isCompleted) {
+                statusClass += 'timeline-entry_complete';
+            } else if (isCurrent) {
+                statusClass += 'timeline-entry_current';
+            } else {
+                statusClass += 'timeline-entry_pending';
+            }
+            stepCopy.statusClass = statusClass;
             stepCopy.icon = step.isCompleted ? 'utility:success' : 'utility:clock';
             stepCopy.iconVariant = step.isCompleted ? 'success' : (isCurrent ? 'warning' : 'default');
             stepCopy.statusLabel = step.isCompleted ? 'Completed' : (isCurrent ? 'In Progress' : 'Pending');

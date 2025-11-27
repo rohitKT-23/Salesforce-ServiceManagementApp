@@ -41,6 +41,11 @@ public class TestDataGenerator {
         List<Service_Document__c> documents = createServiceDocuments(services);
         insert documents;
         System.debug('Created ' + documents.size() + ' Service Documents');
+
+        // Create Service Pricing
+        List<Service_Pricing__c> pricings = createServicePricings(services, displayConfigs);
+        insert pricings;
+        System.debug('Created ' + pricings.size() + ' Service Pricing records');
         
         // Create Approval Steps
         List<Approval_Step__c> approvalSteps = createApprovalSteps(services, statuses);
@@ -352,6 +357,81 @@ public class TestDataGenerator {
         
         return documents;
     }
+
+    private static List<Service_Pricing__c> createServicePricings(List<Service__c> services, List<Display_Configuration__c> configs) {
+        List<Service_Pricing__c> pricings = new List<Service_Pricing__c>();
+        Map<Id, Id> configByService = new Map<Id, Id>();
+        for (Display_Configuration__c config : configs) {
+            configByService.put(config.Service__c, config.Id);
+        }
+
+        for (Service__c service : services) {
+            Decimal baseAmount = getBaseAmount(service.Name);
+            Id configId = configByService.containsKey(service.Id) ? configByService.get(service.Id) : null;
+
+            // Standard package
+            pricings.add(new Service_Pricing__c(
+                Name = service.Name + ' - Standard Package',
+                Pricing_Name__c = 'Standard Package',
+                Service__c = service.Id,
+                Display_Configuration__c = configId,
+                Amount__c = baseAmount,
+                Discount__c = 0,
+                Discount_Percentage__c = 0
+            ));
+
+            // Priority package with small discount
+            Decimal priorityAmount = roundCurrency((baseAmount * 135) / 100); // +35%
+            Decimal priorityDiscount = roundCurrency((priorityAmount * 5) / 100); // 5% discount
+            pricings.add(new Service_Pricing__c(
+                Name = service.Name + ' - Priority Package',
+                Pricing_Name__c = 'Priority Package',
+                Service__c = service.Id,
+                Display_Configuration__c = configId,
+                Amount__c = priorityAmount,
+                Discount__c = priorityDiscount,
+                Discount_Percentage__c = 5
+            ));
+
+            // Executive package with larger discount
+            Decimal executiveAmount = roundCurrency((baseAmount * 175) / 100); // +75%
+            Decimal executiveDiscount = roundCurrency((executiveAmount * 12) / 100); // 12% discount
+            pricings.add(new Service_Pricing__c(
+                Name = service.Name + ' - Executive Package',
+                Pricing_Name__c = 'Executive Package',
+                Service__c = service.Id,
+                Display_Configuration__c = configId,
+                Amount__c = executiveAmount,
+                Discount__c = executiveDiscount,
+                Discount_Percentage__c = 12
+            ));
+        }
+
+        return pricings;
+    }
+
+    private static Decimal getBaseAmount(String serviceName) {
+        if (serviceName == null) {
+            return 1000;
+        }
+
+        serviceName = serviceName.toLowerCase();
+        if (serviceName.contains('it support')) {
+            return 500;
+        } else if (serviceName.contains('onboarding')) {
+            return 1500;
+        } else if (serviceName.contains('partner')) {
+            return 2500;
+        }
+        return 1000;
+    }
+
+    private static Decimal roundCurrency(Decimal amount) {
+        if (amount == null) {
+            return null;
+        }
+        return amount.setScale(0, RoundingMode.HALF_UP);
+    }
     
     private static List<Approval_Step__c> createApprovalSteps(List<Service__c> services, List<Status__c> statuses) {
         List<Approval_Step__c> steps = new List<Approval_Step__c>();
@@ -476,6 +556,34 @@ public class TestDataGenerator {
             System.debug('Created ' + draftStatuses.size() + ' Draft statuses');
         } else {
             System.debug('All services already have Draft status');
+        }
+    }
+
+    /**
+     * Create sample pricing tiers for all existing services.
+     * Safe to run multiple times; consider deleting old pricing records first if needed.
+     */
+    public static void createPricingForExistingServices() {
+        System.debug('=== Creating Pricing for Existing Services ===');
+
+        List<Service__c> services = [SELECT Id, Name FROM Service__c];
+        if (services.isEmpty()) {
+            System.debug('No services found. Aborting pricing creation.');
+            return;
+        }
+
+        List<Display_Configuration__c> configs = [
+            SELECT Id, Service__c
+            FROM Display_Configuration__c
+            WHERE Service__c IN :services
+        ];
+
+        List<Service_Pricing__c> pricings = createServicePricings(services, configs);
+        if (!pricings.isEmpty()) {
+            insert pricings;
+            System.debug('Inserted ' + pricings.size() + ' Service Pricing records');
+        } else {
+            System.debug('No pricing records generated.');
         }
     }
     
