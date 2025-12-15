@@ -1,0 +1,67 @@
+/* PDF Download Button Styles */
+.pdf-button-container {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+}
+
+/* Button styling */
+.pdf-download-button {
+    --slds-c-button-brand-color-background: #0176d3;
+    --slds-c-button-brand-color-background-hover: #014486;
+}
+
+/* Icon button styling */
+.pdf-download-icon {
+    --slds-c-button-icon-color-foreground: #0176d3;
+}
+
+/* Loading overlay */
+.loading-overlay {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: 0.5rem;
+    color: #706e6b;
+}
+
+.loading-text {
+    font-size: 0.75rem;
+    font-style: italic;
+}
+
+/* Hover effects */
+.pdf-download-button:hover,
+.pdf-download-icon:hover {
+    transform: translateY(-1px);
+    transition: transform 0.15s ease-in-out;
+}
+
+/* Focus styles for accessibility */
+.pdf-download-button:focus,
+.pdf-download-icon:focus {
+    outline: 2px solid #0176d3;
+    outline-offset: 2px;
+}
+
+/* Disabled state */
+.pdf-download-button[disabled],
+.pdf-download-icon[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Animation for loading state */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.loading-overlay lightning-spinner {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>60.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Service Request PDF Download Button</masterLabel>
+    <description>A button component to generate and download PDF summary for Service Requests. Includes service details, pricing, documents, and approval timeline.</description>
+    <targets>
+        <target>lightning__RecordPage</target>
+        <target>lightning__RecordAction</target>
+        <target>lightning__FlowScreen</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordPage">
+            <objects>
+                <object>Service_Request__c</object>
+            </objects>
+            <property name="buttonLabel" type="String" default="Download PDF" label="Button Label" description="Label text displayed on the button"/>
+            <property name="buttonTitle" type="String" default="Download Service Request as PDF" label="Button Title/Tooltip" description="Tooltip text shown on hover"/>
+            <property name="buttonVariant" type="String" default="brand" label="Button Variant" datasource="neutral,brand,brand-outline,destructive,success" description="Visual style of the button"/>
+            <property name="iconName" type="String" default="utility:pdf_ext" label="Icon Name" description="SLDS icon name (e.g., utility:pdf_ext, utility:download)"/>
+            <property name="iconPosition" type="String" default="left" label="Icon Position" datasource="left,right" description="Position of the icon relative to label"/>
+            <property name="displayVariant" type="String" default="button" label="Display Variant" datasource="button,icon,menuItem" description="How the component is displayed"/>
+            <property name="iconVariant" type="String" default="border-filled" label="Icon Button Variant" datasource="bare,container,border,border-filled,border-inverse" description="Visual style for icon-only variant"/>
+            <property name="iconSize" type="String" default="medium" label="Icon Size" datasource="xx-small,x-small,small,medium,large" description="Size of the icon for icon-only variant"/>
+            <property name="openInNewTab" type="Boolean" default="false" label="Open in New Tab" description="Whether to open PDF in a new browser tab"/>
+        </targetConfig>
+        <targetConfig targets="lightning__FlowScreen">
+            <property name="recordId" type="String" label="Record ID" description="The Service Request record ID" role="inputOnly"/>
+            <property name="buttonLabel" type="String" default="Download PDF" label="Button Label"/>
+            <property name="buttonVariant" type="String" default="brand" label="Button Variant" datasource="neutral,brand,brand-outline,destructive,success"/>
+        </targetConfig>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="recordId" type="String" label="Record ID" description="The Service Request record ID"/>
+            <property name="buttonLabel" type="String" default="Download PDF" label="Button Label"/>
+            <property name="buttonVariant" type="String" default="brand" label="Button Variant" datasource="neutral,brand,brand-outline,destructive,success"/>
+            <property name="openInNewTab" type="Boolean" default="false" label="Open in New Tab"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>
