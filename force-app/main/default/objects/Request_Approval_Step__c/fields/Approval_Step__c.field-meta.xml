@@ -2,6 +2,7 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Approval_Step__c</fullName>
     <deleteConstraint>SetNull</deleteConstraint>
+    <externalId>false</externalId>
     <label>Approval Step</label>
     <referenceTo>Approval_Step__c</referenceTo>
     <relationshipLabel>Request Approval Steps</relationshipLabel>

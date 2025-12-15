@@ -93,12 +93,16 @@ export default class ServiceRequestPdfButton extends NavigationMixin(LightningEl
             
             console.log('Opening PDF URL:', pdfUrl);
 
-            // Always open PDF in new tab (best UX for PDF documents)
-            // Using window.open ensures it works in Lightning Experience
-            this.openPdfInNewTab(pdfUrl);
-
-            // Show success message
-            this.showToast('Success', 'PDF is being generated in a new tab...', 'success');
+            // Check openInNewTab setting and open accordingly
+            if (this.openInNewTab) {
+                // Open PDF in new tab
+                this.openPdfInNewTab(pdfUrl);
+                this.showToast('Success', 'PDF is being generated in a new tab...', 'success');
+            } else {
+                // Navigate to PDF page in same window
+                this.navigateToPdfPage();
+                this.showToast('Success', 'Opening PDF...', 'success');
+            }
 
         } catch (error) {
             console.error('Error generating PDF:', error);
@@ -155,15 +159,20 @@ export default class ServiceRequestPdfButton extends NavigationMixin(LightningEl
     }
 
     /**
-     * @description Navigate to the PDF page using Lightning Navigation
+     * @description Navigate to the PDF page in the same window
+     * Uses window.location.href for reliable same-window navigation to Visualforce pages
      */
     navigateToPdfPage() {
-        this[NavigationMixin.Navigate]({
-            type: 'standard__webPage',
-            attributes: {
-                url: this.buildPdfUrl()
-            }
-        });
+        const pdfUrl = this.buildPdfUrl();
+        
+        // For relative URLs, convert to full URL
+        let fullUrl = pdfUrl;
+        if (pdfUrl.startsWith('/')) {
+            fullUrl = window.location.origin + pdfUrl;
+        }
+        
+        // Navigate in same window
+        window.location.href = fullUrl;
     }
 
     /**

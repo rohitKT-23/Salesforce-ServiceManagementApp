@@ -16,24 +16,29 @@ public with sharing class ServiceRequestPDFController {
     public DateTime generatedDateTime { get; set; }
     public String errorMessage { get; set; }
     
+    // Private backing field for recent requests
+    private List<Service_Request__c> recentRequests_cached;
+    
     // Recent requests for the generator page
     public List<Service_Request__c> recentRequests { 
         get {
-            if (recentRequests == null) {
+            if (recentRequests_cached == null) {
                 try {
-                    recentRequests = [
+                    recentRequests_cached = [
                         SELECT Id, Name, CreatedDate, Service__r.Name, Status__r.Name
                         FROM Service_Request__c
                         ORDER BY CreatedDate DESC
                         LIMIT 5
                     ];
                 } catch (Exception e) {
-                    recentRequests = new List<Service_Request__c>();
+                    recentRequests_cached = new List<Service_Request__c>();
                 }
             }
-            return recentRequests;
+            return recentRequests_cached;
         }
-        set;
+        set {
+            recentRequests_cached = value;
+        }
     }
     
     // Calculated totals
@@ -410,4 +415,5 @@ public with sharing class ServiceRequestPDFController {
         public DateTime createdDate { get; set; }
     }
 }
+
 

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomFieldTranslation xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label><!-- Operator --></label>
+    <name>Operator__c</name>
+    <picklistValues>
+        <masterLabel>!=</masterLabel>
+        <translation><!-- != --></translation>
+    </picklistValues>
+    <picklistValues>
+        <masterLabel>&lt;</masterLabel>
+        <translation><!-- &lt; --></translation>
+    </picklistValues>
+    <picklistValues>
+        <masterLabel>&lt;=</masterLabel>
+        <translation><!-- &lt;= --></translation>
+    </picklistValues>
+    <picklistValues>
+        <masterLabel>=</masterLabel>
+        <translation><!-- = --></translation>
+    </picklistValues>
+    <picklistValues>
+        <masterLabel>&gt;</masterLabel>
+        <translation><!-- &gt; --></translation>
+    </picklistValues>
+    <picklistValues>
+        <masterLabel>&gt;=</masterLabel>
+        <translation><!-- &gt;= --></translation>
+    </picklistValues>
+    <picklistValues>
+        <masterLabel>Contains</masterLabel>
+        <translation><!-- Contains --></translation>
+    </picklistValues>
+    <picklistValues>
+        <masterLabel>DoesNotContain</masterLabel>
+        <translation><!-- DoesNotContain --></translation>
+    </picklistValues>
+    <picklistValues>
+        <masterLabel>EndsWith</masterLabel>
+        <translation><!-- EndsWith --></translation>
+    </picklistValues>
+    <picklistValues>
+        <masterLabel>IN</masterLabel>
+        <translation><!-- IN --></translation>
+    </picklistValues>
+    <picklistValues>
+        <masterLabel>NOT IN</masterLabel>
+        <translation><!-- NOT IN --></translation>
+    </picklistValues>
+    <picklistValues>
+        <masterLabel>StartsWith</masterLabel>
+        <translation><!-- StartsWith --></translation>
+    </picklistValues>
+</CustomFieldTranslation>
