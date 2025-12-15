@@ -198,4 +198,3 @@ export default class SectionRenderer extends LightningElement {
         }
     }
 }
-

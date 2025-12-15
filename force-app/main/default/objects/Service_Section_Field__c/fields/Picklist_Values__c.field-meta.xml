@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Picklist_Values__c</fullName>
+    <description>Comma-separated list of picklist values (e.g., &quot;Option1,Option2,Option3&quot;)</description>
     <label>Picklist Values</label>
-    <description>Comma-separated list of picklist values (e.g., "Option1,Option2,Option3")</description>
-    <required>false</required>
+    <length>32768</length>
     <trackHistory>false</trackHistory>
     <trackTrending>false</trackTrending>
     <type>LongTextArea</type>
-    <length>32768</length>
     <visibleLines>3</visibleLines>
 </CustomField>

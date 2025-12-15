@@ -140,4 +140,3 @@ public with sharing class ApprovalStepsController {
         @AuraEnabled public String requestStepId;
     }
 }
-

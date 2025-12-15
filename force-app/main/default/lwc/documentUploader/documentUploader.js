@@ -325,4 +325,3 @@ export default class DocumentUploader extends LightningElement {
         );
     }
 }
-

@@ -1,0 +1,465 @@
+<apex:page controller="ServiceRequestPDFController" 
+           renderAs="pdf" 
+           showHeader="false" 
+           sidebar="false"
+           standardStylesheets="false"
+           applyBodyTag="false"
+           applyHtmlTag="false">
+    
+    <html>
+        <head>
+            <style type="text/css">
+                @page {
+                    size: A4;
+                    margin: 15mm;
+                }
+                
+                body {
+                    font-family: Arial, Helvetica, sans-serif;
+                    font-size: 10pt;
+                    line-height: 1.4;
+                    color: #333333;
+                    margin: 0;
+                    padding: 0;
+                }
+                
+                .header {
+                    background-color: #1a365d;
+                    color: white;
+                    padding: 20px;
+                    margin-bottom: 20px;
+                }
+                
+                .company-logo {
+                    font-size: 22pt;
+                    font-weight: bold;
+                    margin-bottom: 5px;
+                }
+                
+                .document-title {
+                    font-size: 12pt;
+                    margin-bottom: 15px;
+                }
+                
+                .info-table {
+                    width: 100%;
+                    margin-top: 10px;
+                }
+                
+                .info-table td {
+                    vertical-align: top;
+                    padding-right: 20px;
+                }
+                
+                .info-label {
+                    font-size: 8pt;
+                    text-transform: uppercase;
+                }
+                
+                .info-value {
+                    font-size: 11pt;
+                    font-weight: bold;
+                    margin-top: 3px;
+                }
+                
+                .section {
+                    margin-bottom: 15px;
+                    page-break-inside: avoid;
+                }
+                
+                .section-title {
+                    background-color: #e2e8f0;
+                    color: #1a365d;
+                    font-size: 11pt;
+                    font-weight: bold;
+                    padding: 8px 12px;
+                    margin-bottom: 0;
+                    border-left: 4px solid #3182ce;
+                }
+                
+                .section-content {
+                    padding: 12px;
+                    border: 1px solid #e2e8f0;
+                    border-top: none;
+                }
+                
+                .data-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+                
+                .data-table th,
+                .data-table td {
+                    padding: 6px 8px;
+                    text-align: left;
+                    border-bottom: 1px solid #e2e8f0;
+                    font-size: 9pt;
+                }
+                
+                .data-table th {
+                    background-color: #f7fafc;
+                    font-weight: bold;
+                    color: #4a5568;
+                }
+                
+                .field-table {
+                    width: 100%;
+                }
+                
+                .field-table td {
+                    padding: 4px 0;
+                    vertical-align: top;
+                }
+                
+                .field-label {
+                    font-weight: bold;
+                    color: #4a5568;
+                    width: 40%;
+                }
+                
+                .field-value {
+                    color: #1a202c;
+                }
+                
+                .pricing-box {
+                    background-color: #f0fff4;
+                    border: 1px solid #9ae6b4;
+                    padding: 12px;
+                    margin-top: 10px;
+                }
+                
+                .pricing-row {
+                    padding: 4px 0;
+                    border-bottom: 1px dashed #c6f6d5;
+                }
+                
+                .pricing-total {
+                    font-weight: bold;
+                    font-size: 12pt;
+                    color: #22543d;
+                    border-top: 2px solid #38a169;
+                    padding-top: 8px;
+                    margin-top: 8px;
+                }
+                
+                .timeline-item {
+                    padding: 8px 0;
+                    padding-left: 20px;
+                    border-left: 2px solid #e2e8f0;
+                    margin-left: 8px;
+                    margin-bottom: 5px;
+                }
+                
+                .timeline-completed {
+                    border-left-color: #48bb78;
+                }
+                
+                .timeline-title {
+                    font-weight: bold;
+                    color: #2d3748;
+                }
+                
+                .timeline-status {
+                    font-size: 9pt;
+                    color: #718096;
+                }
+                
+                .footer {
+                    margin-top: 20px;
+                    padding-top: 12px;
+                    border-top: 2px solid #e2e8f0;
+                    font-size: 8pt;
+                    color: #718096;
+                }
+                
+                .footer-table {
+                    width: 100%;
+                }
+                
+                .footer-table td {
+                    vertical-align: top;
+                }
+                
+                .error-box {
+                    background-color: #fed7d7;
+                    color: #c53030;
+                    padding: 20px;
+                    text-align: center;
+                    font-size: 12pt;
+                }
+                
+                .text-right { text-align: right; }
+                .text-muted { color: #a0aec0; font-style: italic; }
+            </style>
+        </head>
+        
+        <body>
+            <apex:outputPanel rendered="{!NOT(ISBLANK(errorMessage))}">
+                <div class="error-box">
+                    <apex:outputText value="{!errorMessage}"/>
+                </div>
+            </apex:outputPanel>
+            
+            <apex:outputPanel rendered="{!ISBLANK(errorMessage)}">
+                
+                <!-- Header -->
+                <div class="header">
+                    <div class="company-logo">SERVICE REQUEST</div>
+                    <div class="document-title">Official Summary Document</div>
+                    
+                    <table class="info-table">
+                        <tr>
+                            <td>
+                                <div class="info-label">Request Number</div>
+                                <div class="info-value">
+                                    <apex:outputText value="{!serviceRequest.Name}"/>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="info-label">Service</div>
+                                <div class="info-value">
+                                    <apex:outputText value="{!IF(service != null, service.Name, 'N/A')}"/>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="info-label">Status</div>
+                                <div class="info-value">
+                                    <apex:outputText value="{!IF(serviceRequest.Status__r != null, serviceRequest.Status__r.Name, 'N/A')}" rendered="{!serviceRequest.Status__r != null}"/>
+                                    <apex:outputText value="N/A" rendered="{!serviceRequest.Status__r == null}"/>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <!-- Service Information -->
+                <div class="section">
+                    <div class="section-title">Service Information</div>
+                    <div class="section-content">
+                        <table class="field-table">
+                            <tr>
+                                <td class="field-label">Service Name</td>
+                                <td class="field-value">
+                                    <apex:outputText value="{!IF(service != null, service.Name, 'N/A')}"/>
+                                </td>
+                                <td class="field-label">Request Date</td>
+                                <td class="field-value">
+                                    <apex:outputText value="{0,date,MMMM dd, yyyy}">
+                                        <apex:param value="{!serviceRequest.CreatedDate}"/>
+                                    </apex:outputText>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="field-label">Service Type</td>
+                                <td class="field-value">
+                                    <apex:outputText value="{!IF(AND(service != null, service.Service_Type__c != null), service.Service_Type__c, 'N/A')}"/>
+                                </td>
+                                <td class="field-label">Last Modified</td>
+                                <td class="field-value">
+                                    <apex:outputText value="{0,date,MMMM dd, yyyy}">
+                                        <apex:param value="{!serviceRequest.LastModifiedDate}"/>
+                                    </apex:outputText>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="field-label">SLA Days</td>
+                                <td class="field-value">
+                                    <apex:outputText value="{!IF(AND(service != null, service.SLA_Days__c != null), service.SLA_Days__c, 'N/A')}"/>
+                                </td>
+                                <td class="field-label">Owner</td>
+                                <td class="field-value">
+                                    <apex:outputText value="{!serviceRequest.Owner.Name}"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Request Details -->
+                <apex:outputPanel rendered="{!requestFields.size > 0}">
+                    <div class="section">
+                        <div class="section-title">Request Details</div>
+                        <div class="section-content">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 40%;">Field</th>
+                                        <th style="width: 60%;">Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <apex:repeat value="{!requestFields}" var="field">
+                                        <tr>
+                                            <td><apex:outputText value="{!field.label}"/></td>
+                                            <td><apex:outputText value="{!field.value}"/></td>
+                                        </tr>
+                                    </apex:repeat>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </apex:outputPanel>
+                
+                <!-- Pricing Summary -->
+                <apex:outputPanel rendered="{!pricing != null}">
+                    <div class="section">
+                        <div class="section-title">Pricing Summary</div>
+                        <div class="section-content">
+                            <table class="field-table">
+                                <tr>
+                                    <td class="field-label">Pricing Plan</td>
+                                    <td class="field-value">
+                                        <apex:outputText value="{!IF(pricing.Pricing_Name__c != null, pricing.Pricing_Name__c, pricing.Name)}"/>
+                                    </td>
+                                </tr>
+                                <apex:outputPanel layout="none" rendered="{!pricing.Discount_Percentage__c != null}">
+                                    <tr>
+                                        <td class="field-label">Discount Rate</td>
+                                        <td class="field-value"><apex:outputText value="{!pricing.Discount_Percentage__c}"/>%</td>
+                                    </tr>
+                                </apex:outputPanel>
+                            </table>
+                            
+                            <div class="pricing-box">
+                                <div class="pricing-row">
+                                    <table style="width:100%">
+                                        <tr>
+                                            <td>Subtotal</td>
+                                            <td class="text-right">
+                                                <apex:outputText value="{0, number, $#,##0.00}">
+                                                    <apex:param value="{!subtotal}"/>
+                                                </apex:outputText>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <apex:outputPanel layout="none" rendered="{!discountAmount > 0}">
+                                    <div class="pricing-row" style="color: #c53030;">
+                                        <table style="width:100%">
+                                            <tr>
+                                                <td>Discount</td>
+                                                <td class="text-right">
+                                                    -<apex:outputText value="{0, number, $#,##0.00}">
+                                                        <apex:param value="{!discountAmount}"/>
+                                                    </apex:outputText>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </apex:outputPanel>
+                                <div class="pricing-total">
+                                    <table style="width:100%">
+                                        <tr>
+                                            <td>Total Amount</td>
+                                            <td class="text-right">
+                                                <apex:outputText value="{0, number, $#,##0.00}">
+                                                    <apex:param value="{!totalAmount}"/>
+                                                </apex:outputText>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </apex:outputPanel>
+                
+                <!-- Documents -->
+                <div class="section">
+                    <div class="section-title">Uploaded Documents</div>
+                    <div class="section-content">
+                        <apex:outputPanel rendered="{!documents.size > 0}">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 5%;">#</th>
+                                        <th style="width: 45%;">Document Name</th>
+                                        <th style="width: 15%;">Type</th>
+                                        <th style="width: 20%;">Uploaded Date</th>
+                                        <th style="width: 15%;">Uploaded By</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <apex:variable var="docIdx" value="{!1}"/>
+                                    <apex:repeat value="{!documents}" var="doc">
+                                        <tr>
+                                            <td><apex:outputText value="{!docIdx}"/></td>
+                                            <td><apex:outputText value="{!doc.Name}"/></td>
+                                            <td><apex:outputText value="{!doc.Type__c}"/></td>
+                                            <td>
+                                                <apex:outputText value="{0,date,MMM dd, yyyy}">
+                                                    <apex:param value="{!doc.CreatedDate}"/>
+                                                </apex:outputText>
+                                            </td>
+                                            <td><apex:outputText value="{!doc.CreatedBy.Name}"/></td>
+                                        </tr>
+                                        <apex:variable var="docIdx" value="{!docIdx + 1}"/>
+                                    </apex:repeat>
+                                </tbody>
+                            </table>
+                        </apex:outputPanel>
+                        <apex:outputPanel rendered="{!documents.size == 0}">
+                            <p class="text-muted">No documents uploaded for this request.</p>
+                        </apex:outputPanel>
+                    </div>
+                </div>
+                
+                <!-- Approval Timeline -->
+                <div class="section">
+                    <div class="section-title">Approval Timeline</div>
+                    <div class="section-content">
+                        <apex:outputPanel rendered="{!approvalSteps.size > 0}">
+                            <apex:repeat value="{!approvalSteps}" var="step">
+                                <div class="timeline-item {!IF(step.isCompleted, 'timeline-completed', '')}">
+                                    <div class="timeline-title">
+                                        Step <apex:outputText value="{!step.sequence}"/>: <apex:outputText value="{!step.description}"/>
+                                    </div>
+                                    <div class="timeline-status">
+                                        Status: <apex:outputText value="{!step.currentStatus}"/>
+                                        <apex:outputPanel layout="none" rendered="{!AND(step.expectedStatus != step.currentStatus, step.expectedStatus != null, step.expectedStatus != '')}">
+                                            <span style="color: #a0aec0;"> (Expected: <apex:outputText value="{!step.expectedStatus}"/>)</span>
+                                        </apex:outputPanel>
+                                    </div>
+                                    <apex:outputPanel layout="none" rendered="{!step.completedDate != null}">
+                                        <div class="timeline-status">
+                                            Completed: <apex:outputText value="{!step.formattedDate}"/>
+                                        </div>
+                                    </apex:outputPanel>
+                                </div>
+                            </apex:repeat>
+                        </apex:outputPanel>
+                        <apex:outputPanel rendered="{!approvalSteps.size == 0}">
+                            <p class="text-muted">No approval steps configured for this service.</p>
+                        </apex:outputPanel>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div class="footer">
+                    <table class="footer-table">
+                        <tr>
+                            <td style="width: 50%;">
+                                <strong>Generated By</strong><br/>
+                                <apex:outputText value="{!currentUser.Name}"/><br/>
+                                <apex:outputPanel layout="none" rendered="{!currentUser.Title != null}">
+                                    <apex:outputText value="{!currentUser.Title}"/><br/>
+                                </apex:outputPanel>
+                                <apex:outputText value="{!currentUser.Email}"/>
+                            </td>
+                            <td style="width: 50%;" class="text-right">
+                                <strong>Document Information</strong><br/>
+                                Generated on: <apex:outputText value="{0,date,MMMM dd, yyyy 'at' hh:mm a}">
+                                    <apex:param value="{!generatedDateTime}"/>
+                                </apex:outputText><br/>
+                                Request ID: <apex:outputText value="{!serviceRequest.Id}"/><br/>
+                                <em>This is a system-generated document.</em>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                
+            </apex:outputPanel>
+        </body>
+    </html>
+    
+</apex:page>

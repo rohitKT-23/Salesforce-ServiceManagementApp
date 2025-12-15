@@ -33,4 +33,3 @@ export default class DocumentList extends LightningElement {
         return '/sfc/servlet.shepherd/document/download/' + contentDocumentId;
     }
 }
-

@@ -1,0 +1,450 @@
+<apex:page controller="ServiceRequestPDFController" 
+           showHeader="true" 
+           sidebar="false"
+           lightningStylesheets="true"
+           docType="html-5.0">
+    
+    <apex:slds />
+    
+    <script type="text/javascript">
+        // Visualforce Remoting stub
+        if (typeof Visualforce === 'undefined') {
+            Visualforce = {};
+        }
+        if (typeof Visualforce.remoting === 'undefined') {
+            Visualforce.remoting = {};
+        }
+    </script>
+    
+    <style>
+        .container {
+            max-width: 700px;
+            margin: 50px auto;
+            padding: 30px;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        .header-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #1a365d 0%, #3182ce 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+        .header-icon svg {
+            width: 30px;
+            height: 30px;
+            fill: white;
+        }
+        .title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a365d;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .form-label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #4a5568;
+        }
+        .search-container {
+            position: relative;
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px 40px 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #3182ce;
+        }
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #718096;
+            pointer-events: none;
+        }
+        .dropdown-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #3182ce;
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .dropdown-results.show {
+            display: block;
+        }
+        .dropdown-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.2s;
+        }
+        .dropdown-item:hover {
+            background: #f7fafc;
+        }
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+        .item-name {
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+        .item-meta {
+            font-size: 12px;
+            color: #718096;
+        }
+        .selected-item {
+            background: #edf2f7;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            display: none;
+        }
+        .selected-item.show {
+            display: block;
+        }
+        .selected-label {
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 4px;
+        }
+        .selected-name {
+            font-weight: bold;
+            color: #1a365d;
+        }
+        .btn-generate {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #1a365d 0%, #3182ce 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+        }
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(49, 130, 206, 0.4);
+        }
+        .btn-generate:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.6;
+        }
+        .helper-text {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 8px;
+        }
+        .error-msg {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .success-msg {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .loading {
+            text-align: center;
+            padding: 10px;
+            color: #718096;
+            font-size: 14px;
+        }
+        .no-results {
+            padding: 15px;
+            text-align: center;
+            color: #718096;
+            font-style: italic;
+        }
+    </style>
+    
+    <div class="container">
+        <div class="card">
+            <!-- Header -->
+            <div class="header-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                </svg>
+            </div>
+            <div class="title">Service Request PDF Generator</div>
+            <div class="subtitle">Search and select a Service Request to generate PDF summary</div>
+            
+            <!-- Messages -->
+            <div id="errorMsg" class="error-msg"></div>
+            <div id="successMsg" class="success-msg"></div>
+            
+            <!-- Form -->
+            <div class="form-group">
+                <label class="form-label" for="searchInput">Service Request Name</label>
+                <div class="search-container">
+                    <input type="text" 
+                           id="searchInput" 
+                           class="form-input" 
+                           placeholder="Type to search Service Request by name..."
+                           autocomplete="off"
+                           onkeyup="handleSearch(event)"
+                           onfocus="showDropdown()"
+                           onblur="handleInputBlur(event)"/>
+                    <span class="search-icon">🔍</span>
+                    <div id="dropdownResults" class="dropdown-results" onmousedown="preventBlur(event)"></div>
+                </div>
+                <div class="helper-text">
+                    Start typing to search Service Requests by name. Select from the dropdown to generate PDF.
+                </div>
+                
+                <!-- Selected Item Display -->
+                <div id="selectedItem" class="selected-item">
+                    <div class="selected-label">Selected:</div>
+                    <div class="selected-name" id="selectedName"></div>
+                </div>
+            </div>
+            
+            <button type="button" class="btn-generate" id="generateBtn" onclick="generatePDF()">
+                📄 Generate PDF
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        var selectedRequestId = null;
+        var selectedRequestName = null;
+        var hideTimeout = null;
+        
+        // Initialize button as disabled on page load
+        window.onload = function() {
+            var btn = document.getElementById('generateBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.style.cursor = 'not-allowed';
+            }
+        };
+        
+        function handleSearch(event) {
+            var searchTerm = event.target.value.trim();
+            var dropdown = document.getElementById('dropdownResults');
+            
+            // Clear previous timeout
+            if (hideTimeout) {
+                clearTimeout(hideTimeout);
+            }
+            
+            if (searchTerm.length < 2) {
+                dropdown.classList.remove('show');
+                clearSelection();
+                return;
+            }
+            
+            // Show loading
+            dropdown.innerHTML = '<div class="loading">Searching...</div>';
+            dropdown.classList.add('show');
+            
+            // Call Remote Action using Visualforce Remoting
+            ServiceRequestPDFController.searchServiceRequests(
+                searchTerm,
+                function(result, event) {
+                    if (event.status) {
+                        displayResults(result);
+                    } else {
+                        dropdown.innerHTML = '<div class="no-results">Error: ' + event.message + '</div>';
+                    }
+                },
+                {escape: true}
+            );
+        }
+        
+        function displayResults(results) {
+            var dropdown = document.getElementById('dropdownResults');
+            
+            if (!results || results.length === 0) {
+                dropdown.innerHTML = '<div class="no-results">No Service Requests found</div>';
+                return;
+            }
+            
+            var html = '';
+            for (var i = 0; i < results.length; i++) {
+                var req = results[i];
+                var dateStr = formatDate(req.createdDate);
+                // Use mousedown instead of onclick to fire before blur
+                html += '<div class="dropdown-item" onmousedown="selectRequest(\'' + 
+                        escapeHtml(req.id) + '\', \'' + escapeHtml(req.name) + '\')">' +
+                        '<div class="item-name">' + escapeHtml(req.name) + '</div>' +
+                        '<div class="item-meta">Service: ' + escapeHtml(req.serviceName || 'N/A') + 
+                        ' | Status: ' + escapeHtml(req.status || 'N/A') + 
+                        ' | Created: ' + dateStr + '</div>' +
+                        '</div>';
+            }
+            
+            dropdown.innerHTML = html;
+        }
+        
+        function selectRequest(id, name) {
+            // Prevent default to stop blur from firing
+            event.preventDefault();
+            event.stopPropagation();
+            
+            selectedRequestId = id;
+            selectedRequestName = name;
+            
+            // Update UI
+            var searchInput = document.getElementById('searchInput');
+            searchInput.value = name;
+            document.getElementById('selectedName').textContent = name;
+            document.getElementById('selectedItem').classList.add('show');
+            
+            // Enable button
+            var btn = document.getElementById('generateBtn');
+            btn.disabled = false;
+            btn.style.cursor = 'pointer';
+            
+            // Hide dropdown
+            document.getElementById('dropdownResults').classList.remove('show');
+            
+            // Show success message
+            var successMsg = document.getElementById('successMsg');
+            successMsg.textContent = 'Selected: ' + name;
+            successMsg.style.display = 'block';
+            document.getElementById('errorMsg').style.display = 'none';
+            
+            // Keep focus on input to prevent blur issues
+            setTimeout(function() {
+                searchInput.blur();
+            }, 100);
+        }
+        
+        function clearSelection() {
+            selectedRequestId = null;
+            selectedRequestName = null;
+            document.getElementById('selectedItem').classList.remove('show');
+            var btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            btn.style.cursor = 'not-allowed';
+        }
+        
+        function generatePDF() {
+            if (!selectedRequestId) {
+                var errorMsg = document.getElementById('errorMsg');
+                errorMsg.textContent = 'Please select a Service Request.';
+                errorMsg.style.display = 'block';
+                return;
+            }
+            
+            var btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Generating...';
+            
+            // Open PDF in new tab
+            var pdfUrl = '/apex/ServiceRequestPDF?id=' + encodeURIComponent(selectedRequestId);
+            window.open(pdfUrl, '_blank');
+            
+            // Show success message
+            var successMsg = document.getElementById('successMsg');
+            successMsg.textContent = 'Opening PDF in new tab...';
+            successMsg.style.display = 'block';
+            
+            // Reset button after delay
+            setTimeout(function() {
+                btn.disabled = false;
+                btn.textContent = '📄 Generate PDF';
+            }, 2000);
+        }
+        
+        function showDropdown() {
+            var searchTerm = document.getElementById('searchInput').value.trim();
+            if (searchTerm.length >= 2) {
+                document.getElementById('dropdownResults').classList.add('show');
+            }
+        }
+        
+        function handleInputBlur(event) {
+            // Clear timeout if exists
+            if (hideTimeout) {
+                clearTimeout(hideTimeout);
+            }
+            
+            // Check if the blur is happening because user clicked on dropdown
+            var dropdown = document.getElementById('dropdownResults');
+            var relatedTarget = event.relatedTarget || document.activeElement;
+            
+            // If clicking inside dropdown, don't hide
+            if (dropdown.contains(relatedTarget)) {
+                return;
+            }
+            
+            // Delay hiding to allow click events
+            hideTimeout = setTimeout(function() {
+                dropdown.classList.remove('show');
+            }, 200);
+        }
+        
+        function preventBlur(event) {
+            // Prevent the input from losing focus when clicking dropdown
+            event.preventDefault();
+        }
+        
+        function formatDate(dateStr) {
+            if (!dateStr) return 'N/A';
+            try {
+                var date = new Date(dateStr);
+                return date.toLocaleDateString();
+            } catch(e) {
+                return 'N/A';
+            }
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            var div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+    
+</apex:page>

@@ -183,4 +183,3 @@ export default class ApprovalStepsTimeline extends LightningElement {
     }
     
 }
-

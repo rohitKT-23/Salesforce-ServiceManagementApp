@@ -1,0 +1,50 @@
+<template>
+    <div class="pdf-button-container">
+        <!-- Standard Button Variant -->
+        <template lwc:if={isButtonVariant}>
+            <lightning-button
+                variant={buttonVariant}
+                label={buttonLabel}
+                title={buttonTitle}
+                icon-name={iconName}
+                icon-position={iconPosition}
+                disabled={isDisabled}
+                onclick={handleDownloadPdf}
+                class="pdf-download-button">
+            </lightning-button>
+        </template>
+
+        <!-- Icon-Only Variant -->
+        <template lwc:if={isIconVariant}>
+            <lightning-button-icon
+                icon-name={iconName}
+                alternative-text={buttonTitle}
+                title={buttonTitle}
+                variant={iconVariant}
+                size={iconSize}
+                disabled={isDisabled}
+                onclick={handleDownloadPdf}
+                class="pdf-download-icon">
+            </lightning-button-icon>
+        </template>
+
+        <!-- Menu Item Variant (for action menus) -->
+        <template lwc:if={isMenuItemVariant}>
+            <lightning-menu-item
+                value="download-pdf"
+                label={buttonLabel}
+                icon-name={iconName}
+                disabled={isDisabled}
+                onclick={handleDownloadPdf}>
+            </lightning-menu-item>
+        </template>
+
+        <!-- Loading Spinner -->
+        <template lwc:if={isLoading}>
+            <div class="loading-overlay">
+                <lightning-spinner alternative-text="Generating PDF..." size="small"></lightning-spinner>
+                <span class="loading-text">Generating PDF...</span>
+            </div>
+        </template>
+    </div>
+</template>
