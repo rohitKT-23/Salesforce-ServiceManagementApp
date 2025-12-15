@@ -494,4 +494,3 @@ export default class ServiceRequestForm extends NavigationMixin(LightningElement
         );
     }
 }
-

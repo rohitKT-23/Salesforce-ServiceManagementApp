@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <brand>
+        <headerColor>#0070D2</headerColor>
+        <logo>X11746245</logo>
+        <logoVersion>1</logoVersion>
+        <shouldOverrideOrgTheme>false</shouldOverrideOrgTheme>
+    </brand>
+    <description>Management Of Different types of Services</description>
+    <formFactors>Small</formFactors>
+    <formFactors>Large</formFactors>
+    <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
+    <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
+    <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
+    <label>Service Management Application</label>
+    <navType>Standard</navType>
+    <tabs>Service_Management_UI</tabs>
+    <tabs>Service__c</tabs>
+    <tabs>Display_Configuration__c</tabs>
+    <tabs>Service_Section__c</tabs>
+    <tabs>Service_Section_Field__c</tabs>
+    <tabs>Service_Document__c</tabs>
+    <tabs>Service_Pricing__c</tabs>
+    <tabs>Condition_Group__c</tabs>
+    <tabs>Condition__c</tabs>
+    <tabs>Approval_Step__c</tabs>
+    <tabs>Service_Request__c</tabs>
+    <tabs>Request_Approval_Step__c</tabs>
+    <tabs>Request_Document__c</tabs>
+    <tabs>Status__c</tabs>
+    <uiType>Lightning</uiType>
+    <utilityBar>Service_Management_Application_UtilityBar</utilityBar>
+</CustomApplication>

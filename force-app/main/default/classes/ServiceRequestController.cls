@@ -488,4 +488,3 @@ public with sharing class ServiceRequestController {
         @AuraEnabled public List<Service_Pricing__c> pricings;
     }
 }
-
