@@ -159,20 +159,29 @@ export default class ServiceRequestPdfButton extends NavigationMixin(LightningEl
     }
 
     /**
-     * @description Navigate to the PDF page in the same window
-     * Uses window.location.href for reliable same-window navigation to Visualforce pages
+     * @description Navigate to the PDF page using Salesforce NavigationMixin
+     * Converts relative URL to full URL and uses standard__webPage for proper
+     * cross-context navigation that respects Salesforce framework
      */
     navigateToPdfPage() {
         const pdfUrl = this.buildPdfUrl();
         
-        // For relative URLs, convert to full URL
+        // Convert relative URL to full URL for NavigationMixin
+        // NavigationMixin.standard__webPage requires a full URL to work correctly
         let fullUrl = pdfUrl;
         if (pdfUrl.startsWith('/')) {
             fullUrl = window.location.origin + pdfUrl;
         }
         
-        // Navigate in same window
-        window.location.href = fullUrl;
+        // Use NavigationMixin for Salesforce-approved navigation
+        // This respects Salesforce framework and handles edge cases in sandboxes,
+        // communities, and orgs with special domain restrictions
+        this[NavigationMixin.Navigate]({
+            type: 'standard__webPage',
+            attributes: {
+                url: fullUrl
+            }
+        });
     }
 
     /**
